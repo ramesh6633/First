@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - Premium Arcade</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            cyan: '#06b6d4',
+                            pink: '#ec4899',
+                            emerald: '#10b981',
+                            purple: '#8b5cf6',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .glass-button {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-button:hover {
+            background: rgba(51, 65, 85, 0.8);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .cell-hover {
+            transition: all 0.2s ease;
+        }
+
+        .cell-hover:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.06);
+            transform: scale(0.97);
+        }
+
+        /* SVG Line Stroke Animation */
+        .win-line-path {
+            stroke-dasharray: 600;
+            stroke-dashoffset: 600;
+            animation: drawLine 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes drawLine {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Glow effects for XO marks */
+        .glow-cyan {
+            filter: drop-shadow(0 0 12px rgba(6, 182, 212, 0.7));
+        }
+
+        .glow-pink {
+            filter: drop-shadow(0 0 12px rgba(236, 72, 153, 0.7));
+        }
+
+        /* Custom scrollbar for modal */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="text-slate-100 font-sans flex flex-col justify-between relative overflow-x-hidden min-h-screen">
+
+    <!-- Particle Confetti Canvas -->
+    <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+    <!-- Header Navigation -->
+    <header class="w-full px-6 py-5 border-b border-white/5 bg-slate-950/40 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-cyan via-brand-purple to-brand-pink flex items-center justify-center shadow-lg shadow-brand-cyan/20">
+                    <i class="fa-solid fa-shapes text-slate-950 text-xl font-black"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-display font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">Tic Tac Toe</h1>
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Pro Arcade Edition</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Sound Toggle -->
+                <button id="soundBtn" onclick="toggleSound()" class="w-10 h-10 rounded-xl glass-button flex items-center justify-center text-slate-300 hover:text-white" title="Toggle Sound">
+                    <i id="soundIcon" class="fa-solid fa-volume-high text-sm"></i>
+                </button>
+                
+                <!-- GitHub Deployment Guide Modal Button -->
+                <button onclick="openGitHubModal()" class="px-4 py-2 rounded-xl glass-button text-xs font-semibold flex items-center space-x-2 text-brand-cyan border-brand-cyan/30 hover:border-brand-cyan/60 shadow-lg shadow-brand-cyan/5">
+                    <i class="fa-brands fa-github text-sm"></i>
+                    <span>GitHub Deployment</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="flex-grow max-w-lg w-full mx-auto px-4 py-6 flex flex-col justify-center items-center relative z-10">
+        
+        <!-- Game Controls Bar -->
+        <div class="w-full glass-panel rounded-2xl p-2.5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex bg-slate-950/60 p-1 rounded-xl w-full sm:w-auto border border-white/5">
+                <button id="modePvp" onclick="setMode('pvp')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-brand-cyan to-blue-600 text-slate-950 shadow-md">
+                    <i class="fa-solid fa-user-group mr-1.5"></i> Pass & Play
+                </button>
+                <button id="modePvc" onclick="setMode('pvc')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-robot mr-1.5"></i> vs AI
+                </button>
+            </div>
+
+            <div id="aiDifficultyWrapper" class="hidden items-center space-x-2 text-xs w-full sm:w-auto justify-end px-2">
+                <span class="text-slate-400 font-medium">Difficulty:</span>
+                <select id="aiDifficulty" onchange="setDifficulty(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-brand-cyan">
+                    <option value="unbeatable">Unbeatable (Minimax)</option>
+                    <option value="easy">Casual (Easy)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Scoreboard Tracker -->
+        <div class="grid grid-cols-3 gap-3 w-full mb-6">
+            <!-- Player X Box -->
+            <div id="scoreBoxX" class="glass-panel rounded-2xl p-3 text-center border-b-2 border-b-brand-cyan transition-all">
+                <div class="flex items-center justify-center space-x-1.5 mb-1">
+                    <i class="fa-solid fa-xmark text-brand-cyan text-xs"></i>
+                    <span id="playerXName" class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Player X</span>
+                </div>
+                <span id="scoreX" class="text-2xl font-display font-extrabold text-white">0</span>
+            </div>
+
+            <!-- Ties Box -->
+            <div id="scoreBoxTie" class="glass-panel rounded-2xl p-3 text-center border-b-2 border-b-slate-500 transition-all">
+                <div class="flex items-center justify-center space-x-1.5 mb-1">
+                    <i class="fa-solid fa-handshake text-slate-400 text-xs"></i>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Ties</span>
+                </div>
+                <span id="scoreTie" class="text-2xl font-display font-extrabold text-slate-300">0</span>
+            </div>
+
+            <!-- Player O Box -->
+            <div id="scoreBoxO" class="glass-panel rounded-2xl p-3 text-center border-b-2 border-b-brand-pink transition-all">
+                <div class="flex items-center justify-center space-x-1.5 mb-1">
+                    <i class="fa-regular fa-circle text-brand-pink text-xs"></i>
+                    <span id="playerOName" class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Player O</span>
+                </div>
+                <span id="scoreO" class="text-2xl font-display font-extrabold text-white">0</span>
+            </div>
+        </div>
+
+        <!-- Turn Banner -->
+        <div class="mb-6 flex items-center justify-center">
+            <div id="turnBadge" class="glass-button px-5 py-2 rounded-full flex items-center space-x-2.5 text-xs font-semibold shadow-inner">
+                <span id="turnDot" class="w-2.5 h-2.5 rounded-full bg-brand-cyan animate-pulse"></span>
+                <span id="turnText" class="text-slate-200">Player X's Turn</span>
+            </div>
+        </div>
+
+        <!-- Tic Tac Toe Game Board -->
+        <div class="relative w-full max-w-[340px] aspect-square">
+            
+            <!-- SVG Overlay for Perfectly Aligned Win Line -->
+            <svg id="winSvg" class="absolute inset-0 w-full h-full pointer-events-none z-30" viewBox="0 0 300 300">
+                <path id="winLinePath" class="win-line-path hidden" d="" fill="none" stroke="url(#winGradient)" stroke-width="8" stroke-linecap="round"/>
+                <defs>
+                    <linearGradient id="winGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#06b6d4" />
+                        <stop offset="50%" stop-color="#8b5cf6" />
+                        <stop offset="100%" stop-color="#ec4899" />
+                    </linearGradient>
+                </defs>
+            </svg>
+
+            <!-- Board Grid Cells -->
+            <div id="boardGrid" class="grid grid-cols-3 grid-rows-3 gap-3 w-full h-full glass-panel p-3 rounded-3xl relative">
+                <!-- Cell 0 -->
+                <button onclick="cellClicked(0)" id="cell-0" class="game-cell cell-hover glass-button rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                    <span class="cell-mark font-display font-extrabold text-4xl"></span>
+                </button>
+                <!-- Cell 1 -->
+                <button onclick="cellClicked(1)" id="cell-1" class="game-cell cell-hover glass-button rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                    <span class="cell-mark font-display font-extrabold text-4xl"></span>
+                </button>
+                <!-- Cell 2 -->
+                <button onclick="cellClicked(2)" id="cell-2" class="game-cell cell-hover glass-button rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                    <span class="cell-mark font-display font-extrabold text-4xl"></span>
+                </button>
+                <!-- Cell 3 -->
+                <button onclick="cellClicked(3)" id="cell-3" class="game-cell cell-hover glass-button rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                    <span class="cell-mark font-display font-extrabold text-4xl"></span>
+                </button>
+                <!-- Cell 4 -->
+                <button onclick="cellClicked(4)" id="cell-4" class="game-cell cell-hover glass-button rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                    <span class="cell-mark font-display font-extrabold text-4xl"></span>
+                </button>
+                <!-- Cell 5 -->
+                <button onclick="cellClicked(5)" id="cell-5" class="game-cell cell-hover glass-button rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                    <span class="cell-mark font-display font-extrabold text-4xl"></span>
+                </button>
+                <!-- Cell 6 -->
+                <button onclick="cellClicked(6)" id="cell-6" class="game-cell cell-hover glass-button rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                    <span class="cell-mark font-display font-extrabold text-4xl"></span>
+                </button>
+                <!-- Cell 7 -->
+                <button onclick="cellClicked(7)" id="cell-7" class="game-cell cell-hover glass-button rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                    <span class="cell-mark font-display font-extrabold text-4xl"></span>
+                </button>
+                <!-- Cell 8 -->
+                <button onclick="cellClicked(8)" id="cell-8" class="game-cell cell-hover glass-button rounded-2xl flex items-center justify-center relative overflow-hidden group">
+                    <span class="cell-mark font-display font-extrabold text-4xl"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Action Control Buttons -->
+        <div class="flex items-center space-x-3 w-full max-w-[340px] mt-6">
+            <button onclick="resetBoard()" class="flex-1 py-3 px-4 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 transition-all flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>Restart Round</span>
+            </button>
+            <button onclick="resetScores()" class="py-3 px-4 rounded-xl font-bold text-xs glass-button text-slate-400 hover:text-white transition-all flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Clear Score</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- GitHub Pages Guide Modal -->
+    <div id="githubModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel border border-white/10 rounded-3xl max-w-2xl w-full p-6 sm:p-8 relative max-h-[88vh] overflow-y-auto">
+            <button onclick="closeGitHubModal()" class="absolute top-6 right-6 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-11 h-11 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center text-white text-xl">
+                    <i class="fa-brands fa-github"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-white font-display">How to Upload to GitHub Pages</h2>
+                    <p class="text-xs text-slate-400">Follow these simple steps to publish your web game live for free.</p>
+                </div>
+            </div>
+
+            <!-- Deployment Guide Tabs/Steps -->
+            <div class="space-y-4 text-xs text-slate-300">
+                
+                <!-- Method Selection -->
+                <div class="bg-slate-950/70 p-4 rounded-2xl border border-white/5 space-y-2">
+                    <span class="font-bold text-brand-cyan text-xs uppercase tracking-wider block">Step 1: Save your file</span>
+                    <p class="text-slate-400 leading-relaxed">Save this complete code in a file named <code class="bg-slate-800 text-slate-200 px-1.5 py-0.5 rounded border border-white/10">index.html</code> inside a folder on your computer.</p>
+                </div>
+
+                <div class="bg-slate-950/70 p-4 rounded-2xl border border-white/5 space-y-2">
+                    <span class="font-bold text-brand-cyan text-xs uppercase tracking-wider block">Step 2: Create GitHub Repository</span>
+                    <ul class="list-disc list-inside text-slate-400 space-y-1">
+                        <li>Go to <a href="https://github.com/new" target="_blank" class="text-brand-cyan underline">github.com/new</a> and sign in.</li>
+                        <li>Set <strong>Repository Name</strong> to <code class="bg-slate-800 text-slate-200 px-1 py-0.5 rounded">tic-tac-toe</code>.</li>
+                        <li>Keep it set to <strong>Public</strong>.</li>
+                        <li>Click <strong>Create repository</strong>.</li>
+                    </ul>
+                </div>
+
+                <!-- Option A: Direct Web Upload -->
+                <div class="bg-slate-950/70 p-4 rounded-2xl border border-white/5 space-y-2">
+                    <span class="font-bold text-brand-emerald text-xs uppercase tracking-wider block">Option A: Upload via Browser (Easiest)</span>
+                    <ol class="list-decimal list-inside text-slate-400 space-y-1">
+                        <li>On your new repository page, click <strong>uploading an existing file</strong>.</li>
+                        <li>Drag and drop your <code class="bg-slate-800 text-slate-200 px-1 py-0.5 rounded">index.html</code> file.</li>
+                        <li>Click the green <strong>Commit changes</strong> button.</li>
+                    </ol>
+                </div>
+
+                <!-- Option B: Command Line -->
+                <div class="bg-slate-950/70 p-4 rounded-2xl border border-white/5 space-y-2">
+                    <span class="font-bold text-brand-purple text-xs uppercase tracking-wider block">Option B: Upload via Git Terminal Commands</span>
+                    <div class="bg-slate-900/90 p-3 rounded-xl border border-white/5 font-mono text-[11px] text-slate-300 space-y-1 selection:bg-slate-800">
+                        <p><span class="text-slate-500"># Navigate to project folder</span></p>
+                        <p class="text-brand-cyan">git init</p>
+                        <p class="text-brand-cyan">git add index.html</p>
+                        <p class="text-brand-cyan">git commit -m "Initial Tic Tac Toe commit"</p>
+                        <p class="text-brand-cyan">git branch -M main</p>
+                        <p class="text-slate-500"># Replace USERNAME with your GitHub handle</p>
+                        <p class="text-brand-cyan">git remote add origin https://github.com/USERNAME/tic-tac-toe.git</p>
+                        <p class="text-brand-cyan">git push -u origin main</p>
+                    </div>
+                </div>
+
+                <!-- Final Enable Pages Step -->
+                <div class="bg-slate-950/70 p-4 rounded-2xl border border-white/5 space-y-2">
+                    <span class="font-bold text-brand-pink text-xs uppercase tracking-wider block">Step 3: Enable Free Hosting (GitHub Pages)</span>
+                    <ol class="list-decimal list-inside text-slate-400 space-y-1">
+                        <li>Inside your repository, go to <strong>Settings</strong> &rarr; <strong>Pages</strong> (left menu).</li>
+                        <li>Under <em>Build and deployment / Branch</em>, choose <code class="bg-slate-800 text-slate-200 px-1 py-0.5 rounded">main</code> branch and click <strong>Save</strong>.</li>
+                        <li>Wait 1 minute! Your live game URL will appear: <code class="text-brand-cyan underline">https://USERNAME.github.io/tic-tac-toe/</code></li>
+                    </ol>
+                </div>
+
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-white/10 flex justify-end">
+                <button onclick="closeGitHubModal()" class="px-5 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-brand-cyan to-blue-600 text-slate-950 shadow-lg shadow-brand-cyan/20 hover:brightness-110 transition-all">
+                    Close Guide
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 text-center text-[11px] text-slate-500 border-t border-white/5 z-10">
+        <p>Crafted with Web Audio API, Minimax AI & Dynamic SVG rendering.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Game State Variables
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameMode = 'pvp'; // 'pvp' or 'pvc'
+        let aiDifficulty = 'unbeatable'; // 'unbeatable' or 'easy'
+        let isGameActive = true;
+        let soundEnabled = true;
+        let scores = { X: 0, O: 0, Tie: 0 };
+
+        // Winning Combinations Mapping with Exact SVG Grid Center Points (300x300 viewBox)
+        // 3x3 cells map to centers: col 0=50, col 1=150, col 2=250. row 0=50, row 1=150, row 2=250.
+        const winCombinations = [
+            // Rows
+            { combo: [0, 1, 2], line: { x1: 30, y1: 50, x2: 270, y2: 50 } },
+            { combo: [3, 4, 5], line: { x1: 30, y1: 150, x2: 270, y2: 150 } },
+            { combo: [6, 7, 8], line: { x1: 30, y1: 250, x2: 270, y2: 250 } },
+            // Columns
+            { combo: [0, 3, 6], line: { x1: 50, y1: 30, x2: 50, y2: 270 } },
+            { combo: [1, 4, 7], line: { x1: 150, y1: 30, x2: 150, y2: 270 } },
+            { combo: [2, 5, 8], line: { x1: 250, y1: 30, x2: 250, y2: 270 } },
+            // Diagonals
+            { combo: [0, 4, 8], line: { x1: 35, y1: 35, x2: 265, y2: 265 } },
+            { combo: [2, 4, 6], line: { x1: 265, y1: 35, x2: 35, y2: 265 } }
+        ];
+
+        // Synthesized Web Audio API Sound Effects
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'x') {
+                // High crisp chime
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.1); // A5
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'o') {
+                // Warm resonant tone
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now); // A4
+                osc.frequency.exponentialRampToValueAtTime(329.63, now + 0.12); // E4
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'win') {
+                // Victory Fanfare Triad
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C
+                notes.forEach((freq, idx) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    g.gain.setValueAtTime(0.15, now + idx * 0.08);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+                    o.start(now + idx * 0.08);
+                    o.stop(now + idx * 0.08 + 0.3);
+                });
+            } else if (type === 'tie') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(180, now + 0.25);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const soundIcon = document.getElementById('soundIcon');
+            if (soundEnabled) {
+                soundIcon.className = "fa-solid fa-volume-high text-sm";
+            } else {
+                soundIcon.className = "fa-solid fa-volume-xmark text-sm text-slate-500";
+            }
+        }
+
+        // GitHub Modal Toggle
+        function openGitHubModal() {
+            document.getElementById('githubModal').classList.remove('hidden');
+        }
+        function closeGitHubModal() {
+            document.getElementById('githubModal').classList.add('hidden');
+        }
+
+        // Game Configuration
+        function setMode(mode) {
+            gameMode = mode;
+            const pvpBtn = document.getElementById('modePvp');
+            const pvcBtn = document.getElementById('modePvc');
+            const diffWrapper = document.getElementById('aiDifficultyWrapper');
+            const playerOName = document.getElementById('playerOName');
+
+            if (mode === 'pvp') {
+                pvpBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-brand-cyan to-blue-600 text-slate-950 shadow-md";
+                pvcBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
+                diffWrapper.classList.add('hidden');
+                diffWrapper.classList.remove('flex');
+                playerOName.innerText = "Player O";
+            } else {
+                pvcBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all bg-gradient-to-r from-brand-cyan to-blue-600 text-slate-950 shadow-md";
+                pvpBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
+                diffWrapper.classList.remove('hidden');
+                diffWrapper.classList.add('flex');
+                playerOName.innerText = "AI Bot";
+            }
+            resetBoard();
+        }
+
+        function setDifficulty(diff) {
+            aiDifficulty = diff;
+            resetBoard();
+        }
+
+        // Core Gameplay Functions
+        function cellClicked(index) {
+            if (!isGameActive || board[index] !== '') return;
+
+            makeMove(index, currentPlayer);
+
+            if (checkOutcome()) return;
+
+            // Trigger AI if in PVC mode
+            if (gameMode === 'pvc' && isGameActive && currentPlayer === 'O') {
+                disableBoardInteraction(true);
+                setTimeout(() => {
+                    if (!isGameActive) return;
+                    let bestIndex = aiDifficulty === 'unbeatable' ? getMinimaxMove() : getEasyMove();
+                    if (bestIndex !== null && board[bestIndex] === '') {
+                        makeMove(bestIndex, 'O');
+                        checkOutcome();
+                    }
+                    disableBoardInteraction(false);
+                }, 400);
+            }
+        }
+
+        function disableBoardInteraction(disable) {
+            const cells = document.querySelectorAll('.game-cell');
+            cells.forEach(cell => {
+                cell.disabled = disable;
+            });
+        }
+
+        function makeMove(index, player) {
+            board[index] = player;
+            const cellBtn = document.getElementById(`cell-${index}`);
+            const markSpan = cellBtn.querySelector('.cell-mark');
+
+            if (player === 'X') {
+                markSpan.innerText = 'X';
+                markSpan.className = 'cell-mark font-display font-extrabold text-4xl text-brand-cyan glow-cyan animate-[scale_0.2s_ease-out]';
+                playSound('x');
+            } else {
+                markSpan.innerText = 'O';
+                markSpan.className = 'cell-mark font-display font-extrabold text-4xl text-brand-pink glow-pink animate-[scale_0.2s_ease-out]';
+                playSound('o');
+            }
+
+            cellBtn.disabled = true;
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            updateTurnDisplay();
+        }
+
+        function updateTurnDisplay() {
+            if (!isGameActive) return;
+            const turnText = document.getElementById('turnText');
+            const turnDot = document.getElementById('turnDot');
+
+            if (currentPlayer === 'X') {
+                turnText.innerText = "Player X's Turn";
+                turnDot.className = "w-2.5 h-2.5 rounded-full bg-brand-cyan animate-pulse";
+            } else {
+                turnText.innerText = gameMode === 'pvc' ? "AI is thinking..." : "Player O's Turn";
+                turnDot.className = "w-2.5 h-2.5 rounded-full bg-brand-pink animate-pulse";
+            }
+        }
+
+        // Win / Tie Outcome Logic
+        function checkOutcome() {
+            let winningObj = null;
+
+            for (let item of winCombinations) {
+                const [a, b, c] = item.combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    winningObj = item;
+                    break;
+                }
+            }
+
+            if (winningObj) {
+                isGameActive = false;
+                const winner = board[winningObj.combo[0]];
+                
+                drawWinLine(winningObj.line);
+                playSound('win');
+                triggerConfetti();
+
+                const turnText = document.getElementById('turnText');
+                const turnDot = document.getElementById('turnDot');
+
+                if (winner === 'X') {
+                    scores.X++;
+                    document.getElementById('scoreX').innerText = scores.X;
+                    turnText.innerText = "Player X Takes The Round! 🎉";
+                    turnDot.className = "w-2.5 h-2.5 rounded-full bg-brand-cyan";
+                } else {
+                    scores.O++;
+                    document.getElementById('scoreO').innerText = scores.O;
+                    turnText.innerText = gameMode === 'pvc' ? "AI Bot Won! 🤖" : "Player O Takes The Round! 🎉";
+                    turnDot.className = "w-2.5 h-2.5 rounded-full bg-brand-pink";
+                }
+                return true;
+            }
+
+            // Check Tie
+            if (!board.includes('')) {
+                isGameActive = false;
+                scores.Tie++;
+                document.getElementById('scoreTie').innerText = scores.Tie;
+                playSound('tie');
+
+                const turnText = document.getElementById('turnText');
+                const turnDot = document.getElementById('turnDot');
+                turnText.innerText = "Round Draw! 🤝";
+                turnDot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+                return true;
+            }
+
+            return false;
+        }
+
+        // Draw SVG Line precisely from center to center across coordinates
+        function drawWinLine(lineCoords) {
+            const path = document.getElementById('winLinePath');
+            const dStr = `M ${lineCoords.x1} ${lineCoords.y1} L ${lineCoords.x2} ${lineCoords.y2}`;
+            path.setAttribute('d', dStr);
+            path.classList.remove('hidden');
+        }
+
+        // AI Logic
+        function getEasyMove() {
+            let emptyIndices = [];
+            board.forEach((val, idx) => {
+                if (val === '') emptyIndices.push(idx);
+            });
+            if (emptyIndices.length === 0) return null;
+            return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+        }
+
+        function getMinimaxMove() {
+            let bestScore = -Infinity;
+            let move = null;
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === '') {
+                    board[i] = 'O';
+                    let score = minimax(board, 0, false);
+                    board[i] = '';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+            return move;
+        }
+
+        function minimax(currBoard, depth, isMaximizing) {
+            let result = evaluateBoard(currBoard);
+            if (result === 'O') return 10 - depth;
+            if (result === 'X') return depth - 10;
+            if (result === 'tie') return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (currBoard[i] === '') {
+                        currBoard[i] = 'O';
+                        let score = minimax(currBoard, depth + 1, false);
+                        currBoard[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (currBoard[i] === '') {
+                        currBoard[i] = 'X';
+                        let score = minimax(currBoard, depth + 1, true);
+                        currBoard[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function evaluateBoard(b) {
+            for (let item of winCombinations) {
+                const [a, bIdx, c] = item.combo;
+                if (b[a] && b[a] === b[bIdx] && b[a] === b[c]) {
+                    return b[a];
+                }
+            }
+            if (!b.includes('')) return 'tie';
+            return null;
+        }
+
+        // Particle Confetti Explosion
+        const canvas = document.getElementById('confettiCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function triggerConfetti() {
+            particles = [];
+            const colors = ['#06b6d4', '#ec4899', '#10b981', '#8b5cf6', '#f59e0b'];
+            for (let i = 0; i < 80; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 - 50,
+                    vx: (Math.random() - 0.5) * 14,
+                    vy: (Math.random() - 0.7) * 14,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * Math.PI * 2,
+                    vRot: (Math.random() - 0.5) * 0.2,
+                    life: 1,
+                    decay: Math.random() * 0.015 + 0.01
+                });
+            }
+            animateConfetti();
+        }
+
+        let animationFrameId = null;
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let active = false;
+
+            particles.forEach(p => {
+                if (p.life > 0) {
+                    active = true;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.3; // Gravity
+                    p.rotation += p.vRot;
+                    p.life -= p.decay;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = Math.max(0, p.life);
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                }
+            });
+
+            if (active) {
+                animationFrameId = requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        // Reset Logic
+        function resetBoard() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            isGameActive = true;
+
+            // Hide SVG Win Line
+            const path = document.getElementById('winLinePath');
+            path.classList.add('hidden');
+            path.setAttribute('d', '');
+
+            // Clear cells
+            for (let i = 0; i < 9; i++) {
+                const cellBtn = document.getElementById(`cell-${i}`);
+                const markSpan = cellBtn.querySelector('.cell-mark');
+                markSpan.innerText = '';
+                markSpan.className = 'cell-mark font-display font-extrabold text-4xl';
+                cellBtn.disabled = false;
+            }
+
+            updateTurnDisplay();
+        }
+
+        function resetScores() {
+            scores = { X: 0, O: 0, Tie: 0 };
+            document.getElementById('scoreX').innerText = '0';
+            document.getElementById('scoreO').innerText = '0';
+            document.getElementById('scoreTie').innerText = '0';
+            resetBoard();
+        }
+
+        // Initialize state on load
+        window.onload = () => {
+            updateTurnDisplay();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+/* --- Global Styles & CSS Reset --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* CSS Box Model */
+}
+
+html {
+    scroll-behavior: smooth; /* Smooth scrolling for navigation links */
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9fafb;
+}
+
+/* Reusable Container */
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.section {
+    padding: 80px 0;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.2rem;
+    margin-bottom: 50px;
+    color: #1f2937;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background-color: #3b82f6;
+    margin: 8px auto 0;
+    border-radius: 2px;
+}
+
+/* --- 1. Navigation Bar (Flexbox) --- */
+header {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.logo {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #3b82f6;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #4b5563;
+    font-weight: 500;
+    transition: color 0.3s ease; /* CSS Transition */
+}
+
+.nav-links a:hover {
+    color: #3b82f6; /* Hover Effect */
+}
+
+/* --- 2. Introduction (Home) Section --- */
+.hero-section {
+    height: 100vh;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.highlight {
+    color: #93c5fd;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    color: #e5e7eb;
+}
+
+/* Button & Hover Effects */
+.btn {
+    display: inline-block;
+    background-color: #ffffff;
+    color: #1e3a8a;
+    padding: 12px 30px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease; /* CSS Transition */
+}
+
+.btn:hover {
+    background-color: #93c5fd;
+    transform: translateY(-3px); /* Hover Effect + Transform */
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* --- CSS Animation (Fade-in for Hero Title) --- */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInDown 1s ease-out; /* CSS Animation usage */
+}
+
+/* --- 3. About Me Section --- */
+.about-content {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.about-text p {
+    margin-bottom: 15px;
+    font-size: 1.05rem;
+    color: #4b5563;
+}
+
+/* --- 4. Skills Section (CSS Grid) --- */
+.skills-section {
+    background-color: #f3f4f6;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.skill-card {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease; /* CSS Transition */
+}
+
+.skill-card:hover {
+    transform: translateY(-5px); /* Hover Effect */
+}
+
+.skill-card h3 {
+    margin-bottom: 10px;
+    color: #1f2937;
+}
+
+.skill-card p {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+/* --- 5. Projects Section (CSS Grid & Flexbox) --- */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.project-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* CSS Transition */
+}
+
+.project-card:hover {
+    transform: translateY(-5px); /* Hover Effect */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.project-img-placeholder {
+    height: 160px;
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.project-info {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.project-info h3 {
+    margin-bottom: 10px;
+    color: #1f2937;
+}
+
+.project-info p {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.project-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.project-link:hover {
+    color: #1e3a8a;
+}
+
+/* --- 6. Education Section --- */
+.education-section {
+    background-color: #f3f4f6;
+}
+
+.education-timeline {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.edu-item {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid #3b82f6;
+}
+
+.edu-item h3 {
+    color: #1f2937;
+    margin-bottom: 5px;
+}
+
+.edu-date {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: #3b82f6;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.edu-item p {
+    color: #6b7280;
+}
+
+/* --- 7. Contact Section --- */
+.contact-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+/* --- 8. Footer --- */
+footer {
+    background-color: #1f2937;
+    color: #9ca3af;
+    text-align: center;
+    padding: 25px 20px;
+    font-size: 0.9rem;
+}
+
+/* --- Responsive Media Queries for Mobile Devices --- */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .nav-links {
+        gap: 15px;
+        font-size: 0.9rem;
+    }
+
+    .hero-content h1 {
+        font-size: 2.2rem;
+    }
+
+    .section {
+        padding: 50px 0;
+    }
+}

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramesh Suthar - Web Development Student Portfolio</title>
+    <!-- Link to External CSS stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 1. Navigation Bar -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">Ramesh Suthar</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#education">Education</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- 2. Introduction (Home) Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-content">
+            <h1 class="fade-in">Hi, I'm <span class="highlight">Ramesh Suthar</span></h1>
+            <p>A passionate student learning Web Development and building modern websites.</p>
+            <a href="#projects" class="btn">View My Work</a>
+        </div>
+    </section>
+
+    <!-- 3. About Me Section -->
+    <section id="about" class="container section">
+        <h2 class="section-title">About Me</h2>
+        <div class="about-content">
+            <div class="about-text">
+                <p>Hello!, I'm Ramesh Suthar, CS & AI student at Scaler School of Technology passionate about building modern web applications. Currently mastering Web Development (HTML, CSS) and problem-solving, with a strong focus on creating clean, intuitive user interfaces and scalable software solutions. I love learning how websites are built from scratch and turning creative ideas into functional web pages using HTML and CSS.</p>
+                <p>My goal is to keep improving my coding skills, learn JavaScript next, and eventually become a professional frontend developer capable of building user-friendly and responsive applications.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Skills Section (HTML and CSS) -->
+    <section id="skills" class="skills-section section">
+        <div class="container">
+            <h2 class="section-title">My Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <h3>HTML5</h3>
+                    <p>Semantic markup, structuring web pages, forms, and accessibility best practices.</p>
+                </div>
+                <div class="skill-card">
+                    <h3>CSS3</h3>
+                    <p>Styling layouts, Flexbox, CSS Grid, responsive design, transitions, and animations.</p>
+                </div>
+                <div class="skill-card">
+                    <h3>Responsive Design</h3>
+                    <p>Building websites that look great and adapt seamlessly to mobile phones, tablets, and desktops.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Projects Section (Featured Project Cards) -->
+    <section id="projects" class="container section">
+        <h2 class="section-title">Featured Projects</h2>
+        <div class="projects-grid">
+            <!-- Project 1 -->
+            <div class="project-card">
+                <div class="project-img-placeholder">Tic Tac Toe</div>
+                <div class="project-info">
+                    <h3>Tic Tac Toe</h3>
+                    <p>An interactive, modern Tic Tac Toe game with customizable modes including Pass &amp; Play and vs AI.</p>
+                    <a href="modern_tic_tac_toe (3).html" class="project-link">Play Game</a>
+                </div>
+            </div>
+            <!-- Project 2 -->
+            <div class="project-card">
+                <div class="project-img-placeholder">Snake Game</div>
+                <div class="project-info">
+                    <h3>Snake Game</h3>
+                    <p>A classic retro arcade Snake game built with HTML5 Canvas featuring real-time controls and score tracking.</p>
+                    <a href="game.html" class="project-link">Play Game</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Education Section -->
+    <section id="education" class="education-section section">
+        <div class="container">
+            <h2 class="section-title">Education</h2>
+            <div class="education-timeline">
+                <div class="edu-item">
+                    <h3>Web Development Student</h3>
+                    <span class="edu-date">2026 - Present</span>
+                    <p>Learning foundational web technologies (HTML, CSS) and building practice projects to strengthen coding fundamentals.</p>
+                </div>
+                <div class="edu-item">
+                    <h3>High School / General Studies</h3>
+                    <p>Focusing on academics and building strong analytical and problem-solving skills.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Contact Section -->
+    <section id="contact" class="container section">
+        <h2 class="section-title">Get In Touch</h2>
+        <div class="contact-container">
+            <form class="contact-form" onsubmit="event.preventDefault(); alert('Thank you for your message, Ramesh will get back to you soon!');">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Your Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Your Message</label>
+                    <textarea id="message" rows="4" placeholder="Type your message here..." required></textarea>
+                </div>
+                <button type="submit" class="btn">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 8. Footer -->
+    <footer>
+        <p>&copy; 2026 Ramesh Suthar. All rights reserved. Built with HTML & CSS.</p>
+    </footer>
+
+</body>
+</html>
